@@ -1,5 +1,6 @@
 import datetime
 import json
+import math
 import os
 import pandas as pd
 import requests
@@ -75,10 +76,126 @@ def download_xlsx_file(url: str, file_path: str):
         if sheet_name == list(sheets.keys())[1]:
             # df.columns = ['PRODUTO', 'SAFRAS_21/22',  'SAFRAS_22/23', 'Percentual', 'Absoluta', 'Variação', '']
 
+
             documents = df.to_dict(orient='records')
-            print(documents[0])
-            # repository.insert_document(document)
-        
+            print()
+            print()
+            print()
+            print()
+            print()
+            print(file_path)
+            print(sheet_name)
+            # print(len(documents))
+            # print('0', documents[0])
+            # print('1', documents[1])
+            # print('2', documents[2])
+            # print('3', documents[3])
+            # print('4', documents[4])
+            # print('5', documents[5])
+            # print('6', documents[6])
+            # print('7', documents[7])
+            # print('8', documents[8])
+            # print()
+            # print()
+            # print()
+            
+
+            insert_dict = {}
+            titles = []
+            titles_index = 0
+            table_index = 0
+            
+            for index, document in enumerate(documents):
+                values = list(document.values())
+                
+                # check if all is nan
+                if all([type(value) == float and value != value for value in values]):
+                    continue
+
+                if any([type(value) == float and value != value for value in values]):
+                    big_one = ''
+                    if type(values[0]) == str:
+                        big_one = values[0]
+                        insert_dict[big_one] = {}
+
+                    # string_values = [value.strip().replace(" ", "") for value in values if type(value) == str]
+                    string_values = []
+                    
+                    for value in values:
+                        in_dict = {}
+
+                        if type(value) == str and value != '' and value != big_one:
+                            string_values.append(value.strip().replace(" ", ""))
+                        elif value == big_one:
+                            continue
+                        else:
+                            string_values.append('')
+
+                    if len(string_values) > 1:
+                        # check if all is empty string
+                        if all([value == '' for value in string_values]):
+                            continue
+
+                        # title_values = string_values
+                        title_values = {}
+
+                        for i, value in enumerate(string_values):
+                            if value != '':
+                                title_values[value] = 0
+                                continue
+
+                            keys = list(title_values.keys())
+
+                            if keys:
+                                last_key = str(keys[-1])
+
+                                title_values[last_key] += 1
+                                
+                        # print(title_values)
+                        titles.append(title_values)
+                        
+                else:
+                    titles_index += 1
+                    keys = list(insert_dict.keys())
+
+                    if keys:
+                        last_key = str(keys[-1])
+
+                        insert_dict[last_key][values[0]] = {}
+
+                # check if at least one is nan
+            # print()
+            # print(titles)
+            # print()
+            # print(json.dumps(insert_dict, indent=2))
+            # print()
+            field_tree = {}
+
+            for index, title in enumerate(titles):
+                print(title)
+
+                if index == 0 or all([value == 0 for value in title.values()]):
+                    keys = list(title.keys())
+                    # print(keys)
+                    for key in keys:
+                        field_tree[key] = {}
+
+                    continue
+
+                keys = list(title.keys())
+                
+                for key in keys:
+                    for k in list(field_tree.keys()):
+                        if titles[index - 1][k] != 0:
+                            field_tree[k][key] = {}
+                            # wrong
+                            titles[index - 1][k] -= 1
+
+            # for insert_dict_key in insert_dict.keys():
+            #     for item_key in insert_dict[insert_dict_key].keys():
+
+                
+
         documents = df.to_dict(orient='records')
         # collection_name = sheet_name.replace(' ', '_').lower()
 
